@@ -1,10 +1,9 @@
 import type { Awaitable, ClientEvents } from 'discord.js';
-import type { PoruEvents } from 'poru';
 import { Client } from './Client';
 
-export class Listener<E extends keyof ClientEvents | keyof PoruEvents = keyof ClientEvents | keyof PoruEvents> {
+export class Listener<E extends keyof ClientEvents = keyof ClientEvents> {
 	private data: ListenerOptions<E>;
-	public event: keyof ClientEvents | keyof PoruEvents;
+	public event: keyof ClientEvents;
 	public once: boolean;
 	public run: (...args: EventArgs<E>) => Awaitable<void>;
 
@@ -23,15 +22,11 @@ export class Listener<E extends keyof ClientEvents | keyof PoruEvents = keyof Cl
 	}
 }
 
-interface ListenerOptions<T> {
+interface ListenerOptions<T extends keyof ClientEvents> {
 	name?: string;
-	event: T extends keyof ClientEvents | keyof PoruEvents ? T : never;
+	event: T;
 	once?: boolean;
 	run(...args: EventArgs<T>): Awaitable<void>;
 }
 
-type EventArgs<T> = T extends keyof ClientEvents
-	? [...args: ClientEvents[T], client: Client<true>]
-	: T extends keyof PoruEvents
-		? [...args: Parameters<PoruEvents[T]>, client: Client<true>]
-		: unknown[];
+type EventArgs<T extends keyof ClientEvents> = [...args: ClientEvents[T], client: Client<true>];
